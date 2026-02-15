@@ -38,3 +38,8 @@ vet:
 ## vuln: Check for known vulnerabilities
 vuln:
 	govulncheck ./...
+
+## install-tools: Install development tools
+install-tools:
+	go install golang.org/x/vuln/cmd/govulncheck@latest
+	go get github.com/spf13/viper
