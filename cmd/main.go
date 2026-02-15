@@ -1,9 +1,11 @@
 package main
 
-import "log"
+import (
+	pd "go-ipc/pkg/prodcons"
+)
 
 func main() {
-
-	log.Println("run go")
-
+	var input_data []any = []any{10, 10, 10, 31, 41}
+	var pd pd.ServiceRunnerI = pd.NewProdCons(input_data)
+	pd.Runner()
 }
