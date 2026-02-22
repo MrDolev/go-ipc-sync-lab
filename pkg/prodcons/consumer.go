@@ -3,12 +3,22 @@ package prodcons
 import "log"
 
 type Consumer struct {
-	channel <-chan any
+	results []any
 }
 
-func (c *Consumer) consume(done chan<- bool) {
-	for value := range c.channel {
+func NewConsumer() *Consumer {
+	return &Consumer{}
+}
+
+func (c *Consumer) Results() []any {
+	return c.results
+}
+
+// Consume reads data from the provided channel and appends it to results.
+func (c *Consumer) Consume(ch <-chan any, done chan<- bool) {
+	for value := range ch {
 		log.Printf("consume data %v", value)
+		c.results = append(c.results, value)
 	}
 	done <- true
 }
