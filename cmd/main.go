@@ -4,7 +4,9 @@ import (
 	"fmt"
 	mx "go-ipc/pkg/mutex"
 	pd "go-ipc/pkg/prodcons"
+	sem "go-ipc/pkg/semaphore"
 	"strings"
+	"sync"
 )
 
 func main() {
@@ -38,5 +40,25 @@ func main() {
 	fmt.Println("  Mutex Synchronization Results")
 	fmt.Println(strings.Repeat("=", 50))
 	fmt.Printf("✓ Completed %d concurrent counter increments\n", resMutex.FinalIncrement)
+	fmt.Println(strings.Repeat("=", 50) + "\n")
+
+	// Initialize and run semaphore worker pool
+	var wg sync.WaitGroup
+	semaphore := sem.Semaphore{Channel: make(chan struct{}, 3)}
+	worker := sem.NewWorker(&wg, semaphore)
+
+	const jobCount = 10
+	for i := 0; i < jobCount; i++ {
+		wg.Add(1)
+		go worker.Job(i)
+	}
+	wg.Wait()
+
+	fmt.Println(strings.Repeat("=", 50))
+	fmt.Println("  Semaphore Worker Pool Results")
+	fmt.Println(strings.Repeat("=", 50))
+	fmt.Printf("Total Jobs:          %d\n", jobCount)
+	fmt.Printf("Semaphore Limit:     3 concurrent jobs\n")
+	fmt.Println("✓ All jobs completed successfully")
 	fmt.Println(strings.Repeat("=", 50) + "\n")
 }
