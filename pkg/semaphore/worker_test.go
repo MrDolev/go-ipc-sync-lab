@@ -39,7 +39,7 @@ func TestWorkerJob(t *testing.T) {
 			}
 			w.wg.Wait()
 			if tt.jobCount != cj.Count() {
-				t.Errorf("Runner() = %v, want %v", cj.completed, tt.jobCount)
+				t.Errorf("Runner() = %v, want %v", cj.Count(), tt.jobCount)
 			}
 		})
 	}
