@@ -14,7 +14,7 @@ build:
 
 ## run: Build and run the application
 run: build
-	./$(BIN_DIR)/$(BINARY_NAME)
+	@./$(BIN_DIR)/$(BINARY_NAME)
 
 ## clean: Remove built binaries
 clean:
