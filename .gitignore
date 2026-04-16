@@ -50,6 +50,9 @@ go.work.sum
 .history
 .ionide
 
+### Zed ###
+.zed/
+
 ### Local bin ###
 # Ignore all artifacts
 bin/
