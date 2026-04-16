@@ -29,7 +29,7 @@ func TestWorkerJob(t *testing.T) {
 			w := &Worker{
 				wg: &wg,
 				semaphore: Semaphore{
-					Channel: make(chan struct{}, tt.jobCount),
+					Channel: make(chan struct{}, tt.semaphoreSize),
 				},
 			}
 			cj := NewCompletedJobs()
@@ -54,8 +54,10 @@ func NewCompletedJobs() *CompletedJobs {
 }
 
 func (cj *CompletedJobs) jobDone(id int, worker *Worker) {
-	go worker.Job(id)
-	cj.completed.Add(1)
+	go func() {
+		worker.Job(id)
+		cj.completed.Add(1)
+	}()
 }
 
 func (cj *CompletedJobs) Count() int {
