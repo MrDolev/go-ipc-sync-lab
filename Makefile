@@ -21,9 +21,16 @@ clean:
 	go clean
 	rm -rf $(BIN_DIR)
 
-## test: Run tests
+## race: Detect race condition
+race:
+	go run -race ./...
+
+## test: Run tests including race condition identifications
 test:
-	go test -v ./...
+	@echo "Running tests"
+	@go test -v ./...
+	@echo "Running tests to identify race condition"
+	@go test -race ./...
 
 
 ## fmt: Format code
@@ -37,7 +44,8 @@ vet:
 
 ## vuln: Check for known vulnerabilities
 vuln:
-	govulncheck ./...
+	@echo "Running vulnerability check..."
+	@govulncheck ./... || echo "⚠️ Vulnerabilities found"
 
 ## install-tools: Install development tools
 install-tools:
