@@ -14,11 +14,13 @@ func (c *Consumer) Results() []any {
 	return c.results
 }
 
-// Consume reads data from the provided channel and appends it to results.
+// Consume reads data from the provided channel until it is closed.
 func (c *Consumer) Consume(ch <-chan any, done chan<- bool) {
+	// The 'for range' loop automatically exits when the channel is closed by the producer.
 	for value := range ch {
-		log.Printf("consume data %v", value)
+		log.Printf("CONSUMER: received item <- %v", value)
 		c.results = append(c.results, value)
 	}
+	// Signal back to the orchestrator (Runner) that consumption is finished.
 	done <- true
 }
