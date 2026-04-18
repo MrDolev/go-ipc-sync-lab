@@ -102,13 +102,24 @@ for item := range ch {
 
 ## Usage
 
+The project includes a `Makefile` to simplify common tasks.
+
 ```bash
-# Run simulation
-go run ./cmd/main.go
+# Run the simulation (builds and executes)
+make run
 
-# Check for race conditions
-go run -race ./cmd/main.go
+# Run all tests (includes race detection)
+make test
 
-# Run tests
-go test ./...
+# Check for race conditions specifically
+make race
+
+# Format the codebase
+make fmt
+
+# Check for vulnerabilities (requires govulncheck)
+make vuln
+
+# Clean build artifacts
+make clean
 ```
