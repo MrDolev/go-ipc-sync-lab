@@ -1,30 +1,34 @@
 # go-ipc-sync-lab
 
-Practical Go implementations of IPC and synchronization primitives for *Fondamenti di Informatica*.
+Practical Go implementations of IPC and synchronization primitives.
+
+This project originated from project work for the **Fondamenti di Informatica** module (Bachelor's Degree), where I contributed to improving the theoretical descriptions of IPC mechanisms on the Italian Wikipedia page for [Comunicazione tra processi](https://it.wikipedia.org/wiki/Comunicazione_tra_processi).
 
 ---
 
 ## Patterns
 
-| Pattern | Use Case | Go Primitive |
+| Pattern | Concept (Analogy) | Go Primitive |
 |---|---|---|
-| **Mutex** | Protect a single variable/struct from simultaneous writes. | `sync.Mutex` |
-| **Semaphore** | Limit total concurrent goroutines (e.g. max 5 API calls). | `chan struct{}` (Buffered) |
-| **Prod-Cons** | Decouple "data creation" from "data processing". | `chan T` (Unbuffered) |
+| **Mutex** | **The Single Key**: Only one person can enter the room at a time. | `sync.Mutex` |
+| **Semaphore** | **The Admission Ticket**: Limit the total number of guests in the pool. | `chan struct{}` |
+| **Prod-Cons** | **The Handshake**: A direct, synchronous handover of data. | `chan T` |
 
 ---
 
 ## Visualizing Concurrency
 
 ### 1. Mutex (Mutual Exclusion)
-**The Problem**: Multiple goroutines trying to update the same variable at the same time cause a "Race Condition" where updates are lost.
-**The Solution**: A `sync.Mutex` acts like a "single key" to a room. Only the goroutine with the key can enter the **Critical Section**.
+> **The Concept**: Think of a single key to a bathroom. If you have the key, you can enter; if not, you must wait in line until the current occupant comes out and hands you the key.
+
+*   **The Problem**: **Race Conditions**. Multiple goroutines trying to modify the same data simultaneously, leading to unpredictable results and corrupted state.
+*   **The Solution**: Use a `sync.Mutex` to protect the **Critical Section**. It ensures that only one goroutine can execute that block of code at any given time.
 
 ![Mutex](./docs/img/mutex.png)
 
 **Key Logic**:
-*   **Lock**: `mu.Lock()` — Acquire the "key". Blocks others.
-*   **Unlock**: `mu.Unlock()` — Return the "key". Allows the next person in.
+*   `mu.Lock()`: Acquire the key. If someone else has it, you block (wait).
+*   `mu.Unlock()`: Release the key. The next goroutine in line can now take it.
 
 **Example Code**:
 ```go
@@ -33,70 +37,66 @@ var (
     count int
 )
 
-// In a goroutine:
+// Thread-safe increment
 mu.Lock()
-count++         // Safe update
+count++ 
 mu.Unlock()
 ```
 
-*   **Goal**: Prevent data corruption in shared state.
-
 ### 2. Semaphore (Bounded Concurrency)
-**The Problem**: Launching 10,000 goroutines to call an API might crash the server or exhaust system resources.
-**The Solution**: Use a **Buffered Channel** as a "Worker Pool". The channel capacity defines the max number of concurrent workers allowed.
+> **The Concept**: Think of a nightclub with a maximum capacity. Bouncers (the semaphore) only let a new guest in (goroutine) when someone else leaves.
+
+*   **The Problem**: **Resource Exhaustion**. Launching too many concurrent tasks (e.g., thousands of API calls) can crash your system or get you rate-limited.
+*   **The Solution**: Use a **Buffered Channel** as a counting semaphore. The channel's capacity defines the "limit" of allowed concurrent workers.
 
 ![Semaphore](./docs/img/semaphore.png)
 
 **Key Logic**:
-*   **Acquire**: `ch <- struct{}{}` — Take a slot in the pool. Blocks if pool is full.
-*   **Release**: `<-ch` — Give a slot back to the pool.
+*   **Acquire**: `sem <- struct{}{}` (Fill a slot). Blocks if the "club" is full.
+*   **Release**: `<-sem` (Free a slot). Someone left the club.
 
 **Example Code**:
 ```go
-// Pool with 3 slots
+// Limit to 3 concurrent workers
 sem := make(chan struct{}, 3)
 
 for i := 0; i < 10; i++ {
     go func() {
-        sem <- struct{}{}    // Acquire slot
-        doWork()             // Max 3 at a time
-        <-sem                // Release slot
+        sem <- struct{}{} // Acquire
+        defer func() { <-sem }() // Release
+        doWork()
     }()
 }
 ```
 
-*   **Goal**: Limit resource usage and prevent system overload.
+### 3. Producer-Consumer (The Synchronous Pipeline)
+> **The Concept**: Think of a physical handshake. You can't complete the handshake unless both people are present at the same time and reach out.
 
-### 3. Producer-Consumer (Pipeline)
-**The Problem**: You have one worker generating data (Producer) and another worker processing it (Consumer). If they work at different speeds, or if you want to keep their logic separate, you need a way to synchronize them.
-
-**The Solution (The "Handover" Analogy)**: Imagine two people passing boxes. Because this is an **unbuffered channel**, it's like a direct handshake. The Producer can't let go of the box until the Consumer's hands are ready to grab it. If the Producer is too fast, they must wait. If the Consumer is too fast, they must wait for the next box.
+*   **The Problem**: **Tight Coupling**. One part of your system generates data while another processes it. You need a way to pass data safely without them knowing too much about each other.
+*   **The Solution**: Use an **Unbuffered Channel** as a synchronous "Conveyor Belt" or "Pipe". It enforces a perfect rendezvous between the Producer and the Consumer.
 
 ![Producer-Consumer](./docs/img/prod-cons.png)
 
 **Key Logic**:
-*   **Send**: `ch <- data` — The Producer attempts to hand over an item.
-*   **Receive**: `data := <-ch` — The Consumer waits to grab an item.
-*   **Close**: `close(ch)` — The Producer signals that no more boxes are coming.
+*   **Send**: `ch <- data` — The Producer offers an item and waits for a receiver.
+*   **Receive**: `data := <-ch` — The Consumer waits for an item to arrive.
+*   **Close**: `close(ch)` — The Producer signals that the "shift is over."
 
 **Example Code**:
 ```go
-// Shared channel (The Conveyor Belt)
-ch := make(chan string)
+ch := make(chan string) // Unbuffered
 
-// Producer (The Chef)
+// Producer
 go func() {
-    ch <- "Pizza"   // Hand over item
-    close(ch)       // No more pizza!
+    ch <- "Data Packet" 
+    close(ch)
 }()
 
-// Consumer (The Delivery Person)
+// Consumer
 for item := range ch {
-    fmt.Println("Delivering:", item)
+    fmt.Println("Received:", item)
 }
 ```
-
-*   **Goal**: Decouple logic and synchronize data flow via a direct "Pipeline".
 
 ---
 
