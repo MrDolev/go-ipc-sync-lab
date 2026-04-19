@@ -2,6 +2,7 @@
 // It showcases how two independent processes (goroutines) can communicate safely
 // through a shared channel, effectively decoupling the generation of data from its processing.
 package prodcons
+
 // ServiceRunnerI defines a generic interface for running services.
 type ServiceRunnerI interface {
 	// Runner starts the service and returns the results.
@@ -54,7 +55,6 @@ func NewProdCons(producer ProducerI, consumer ConsumerI) *ProdCons {
 // 2. It creates a 'doneCh' to signal when the consumer is finished.
 // 3. It launches both as concurrent goroutines.
 func (pc *ProdCons) Runner() ProdCondsRes {
-...
 	sharedCh := make(chan any)
 	doneCh := make(chan bool)
 
