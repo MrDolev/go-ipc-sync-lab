@@ -106,13 +106,29 @@ for msg := range ch {
 
 ---
 
+## Prerequisites
+
+To run this project, you need the following tools installed:
+
+*   **Go 1.24+**: The programming language used for the implementation.
+*   **Make**: A build automation tool used to run the tasks defined in the `Makefile`.
+*   **Git**: For version control and repository management.
+
+---
+
 ## Usage
 
 The project uses a `Makefile` to provide a consistent interface for development.
 
+### Setup & Verification
+```bash
+make check         # Verify your environment (Go, Make, tools)
+make install-tools # Install required development tools (govulncheck)
+make run           # Build and run the concurrency simulation
+```
+
 ### Development & Execution
 ```bash
-make run    # Build and run the concurrency simulation
 make fmt    # Format all Go source files (idiomatic style)
 make build  # Compile the binary without running
 ```
