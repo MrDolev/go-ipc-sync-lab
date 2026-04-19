@@ -4,10 +4,12 @@ import (
 	"log"
 )
 
+// Producer implements the ProducerI interface to generate data records.
 type Producer struct {
 	records []any
 }
 
+// NewProducer creates a new Producer with the given records.
 func NewProducer(records []any) *Producer {
 	return &Producer{
 		records: records,

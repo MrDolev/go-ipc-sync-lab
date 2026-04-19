@@ -2,14 +2,17 @@ package prodcons
 
 import "log"
 
+// Consumer implements the ConsumerI interface to process data records.
 type Consumer struct {
 	results []any
 }
 
+// NewConsumer creates a new Consumer with empty results.
 func NewConsumer() *Consumer {
 	return &Consumer{}
 }
 
+// Results returns the items that have been consumed.
 func (c *Consumer) Results() []any {
 	return c.results
 }

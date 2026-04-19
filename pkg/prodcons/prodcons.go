@@ -2,9 +2,9 @@
 // It showcases how two independent processes (goroutines) can communicate safely
 // through a shared channel, effectively decoupling the generation of data from its processing.
 package prodcons
-
 // ServiceRunnerI defines a generic interface for running services.
 type ServiceRunnerI interface {
+	// Runner starts the service and returns the results.
 	Runner() ProdCondsRes
 }
 
@@ -18,20 +18,25 @@ type ProdCons struct {
 
 // ProdCondsRes represents the final report of the workflow execution.
 type ProdCondsRes struct {
-	IsDone   bool
+	// IsDone indicates if the workflow finished successfully.
+	IsDone bool
+	// Consumed contains all items processed by the consumer.
 	Consumed []any
 }
 
 // ProducerI defines the interface for a data source.
 // Producers don't need to know who is consuming the data; they just send to a channel.
 type ProducerI interface {
+	// Produce generates items and sends them to the channel.
 	Produce(chan<- any)
 }
 
 // ConsumerI defines the interface for a data sink.
 // Consumers don't need to know where the data comes from; they just read from a channel.
 type ConsumerI interface {
+	// Consume reads from the channel and signals completion on the done channel.
 	Consume(<-chan any, chan<- bool)
+	// Results returns the items consumed during the process.
 	Results() []any
 }
 
@@ -49,6 +54,7 @@ func NewProdCons(producer ProducerI, consumer ConsumerI) *ProdCons {
 // 2. It creates a 'doneCh' to signal when the consumer is finished.
 // 3. It launches both as concurrent goroutines.
 func (pc *ProdCons) Runner() ProdCondsRes {
+...
 	sharedCh := make(chan any)
 	doneCh := make(chan bool)
 
