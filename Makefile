@@ -49,5 +49,13 @@ vuln:
 
 ## install-tools: Install development tools
 install-tools:
+	@echo "Installing development tools..."
 	go install golang.org/x/vuln/cmd/govulncheck@latest
-	go get github.com/spf13/viper
+
+## check: Check if all prerequisites are installed
+check:
+	@echo "Checking environment..."
+	@go version || (echo "❌ Go is not installed"; exit 1)
+	@make --version > /dev/null || (echo "❌ Make is not installed"; exit 1)
+	@govulncheck -version > /dev/null 2>&1 || echo "⚠️ govulncheck is not installed. Run 'make install-tools' to fix."
+	@echo "✅ Environment check passed"
