@@ -6,11 +6,13 @@ import (
 	"time"
 )
 
+// Worker represents a process that performs tasks limited by a semaphore.
 type Worker struct {
 	wg        *sync.WaitGroup
 	semaphore Semaphore
 }
 
+// NewWorker initializes a new Worker with a sync.WaitGroup and a Semaphore.
 func NewWorker(wg *sync.WaitGroup, semaphore Semaphore) *Worker {
 	return &Worker{
 		wg:        wg,
@@ -19,6 +21,7 @@ func NewWorker(wg *sync.WaitGroup, semaphore Semaphore) *Worker {
 }
 
 // Job represents a unit of work that requires a semaphore slot to run.
+// It uses a semaphore to limit concurrency and a WaitGroup to signal completion.
 func (w *Worker) Job(id int) {
 	// 1. Notify the WaitGroup when this goroutine exits.
 	defer w.wg.Done()

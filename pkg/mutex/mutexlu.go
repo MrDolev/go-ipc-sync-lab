@@ -10,6 +10,7 @@ import (
 
 // ServiceMutexI defines the contract for a mutex demonstration runner.
 type ServiceMutexI interface {
+	// Runner executes the concurrency simulation.
 	Runner() CounterRes
 }
 
@@ -23,6 +24,7 @@ type Counter struct {
 
 // CounterRes holds the final state after all concurrent operations.
 type CounterRes struct {
+	// FinalIncrement is the value of the counter after all increments.
 	FinalIncrement int
 }
 
